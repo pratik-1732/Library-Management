@@ -1,8 +1,6 @@
 #include <bits/stdc++.h>
-
 using namespace std;
 
-// Class to represent a book
 class Book
 {
 public:
@@ -21,7 +19,6 @@ public:
     }
 };
 
-// Class to represent a library patron
 class Patron
 {
 public:
@@ -64,7 +61,6 @@ public:
     }
 };
 
-// Class to represent the library
 class Library
 {
 private:
@@ -159,7 +155,6 @@ public:
     }
 };
 
-// Main function
 int main()
 {
     Library library;
