@@ -4,12 +4,12 @@ using namespace std;
 class Book
 {
 public:
-    int id;
+    string id;
     string title;
     string author;
     bool isAvailable;
 
-    Book(int id, const string &title, const string &author)
+    Book(const string &id, const string &title, const string &author)
         : id(id), title(title), author(author), isAvailable(true) {}
 
     void displayDetails() const
@@ -22,11 +22,15 @@ public:
 class Patron
 {
 public:
-    int id;
+    string id;
     string name;
-    vector<int> checkedOutBooks;
+    vector<string> checkedOutBooks;
 
-    Patron(int id, const string &name) : id(id), name(name) {}
+    Patron(const string &name) : name(name)
+    {
+
+        id = generatePatronId(name);
+    }
 
     void displayDetails() const
     {
@@ -38,7 +42,7 @@ public:
         else
         {
             cout << "Checked out books IDs: ";
-            for (int bookId : checkedOutBooks)
+            for (const auto &bookId : checkedOutBooks)
             {
                 cout << bookId << " ";
             }
@@ -46,18 +50,32 @@ public:
         }
     }
 
-    void checkoutBook(int bookId)
+    void checkoutBook(const string &bookId)
     {
         checkedOutBooks.push_back(bookId);
     }
 
-    void returnBook(int bookId)
+    void returnBook(const string &bookId)
     {
         auto it = find(checkedOutBooks.begin(), checkedOutBooks.end(), bookId);
         if (it != checkedOutBooks.end())
         {
             checkedOutBooks.erase(it);
         }
+    }
+
+private:
+    string generatePatronId(const string &name) const
+    {
+
+        srand(time(0));
+        int randomNumber = rand() % 1000;
+
+        string id = name;
+        transform(id.begin(), id.end(), id.begin(), ::tolower);
+        id = id + "-" + to_string(randomNumber);
+
+        return id;
     }
 };
 
@@ -66,15 +84,14 @@ class Library
 private:
     vector<Book> books;
     vector<Patron> patrons;
-    int nextBookId;
-    int nextPatronId;
 
 public:
-    Library() : nextBookId(1), nextPatronId(1) {}
-
     void addBook(const string &title, const string &author)
     {
-        books.emplace_back(nextBookId++, title, author);
+
+        string id = generateBookId(title);
+
+        books.emplace_back(id, title, author);
         cout << "Book added successfully!" << endl;
     }
 
@@ -88,7 +105,17 @@ public:
 
     void addPatron(const string &name)
     {
-        patrons.emplace_back(nextPatronId++, name);
+
+        for (const auto &patron : patrons)
+        {
+            if (patron.name == name)
+            {
+                cout << "Patron with this name already exists!" << endl;
+                return;
+            }
+        }
+
+        patrons.emplace_back(name);
         cout << "Patron added successfully!" << endl;
     }
 
@@ -100,7 +127,7 @@ public:
         }
     }
 
-    void checkoutBook(int bookId, int patronId)
+    void checkoutBook(const string &bookId, const string &patronName)
     {
         auto bookIt = find_if(books.begin(), books.end(),
                               [bookId](const Book &book)
@@ -108,8 +135,8 @@ public:
         if (bookIt != books.end() && bookIt->isAvailable)
         {
             auto patronIt = find_if(patrons.begin(), patrons.end(),
-                                    [patronId](const Patron &patron)
-                                    { return patron.id == patronId; });
+                                    [patronName](const Patron &patron)
+                                    { return patron.name == patronName; });
             if (patronIt != patrons.end())
             {
                 bookIt->isAvailable = false;
@@ -127,7 +154,7 @@ public:
         }
     }
 
-    void returnBook(int bookId, int patronId)
+    void returnBook(const string &bookId, const string &patronName)
     {
         auto bookIt = find_if(books.begin(), books.end(),
                               [bookId](const Book &book)
@@ -135,8 +162,8 @@ public:
         if (bookIt != books.end() && !bookIt->isAvailable)
         {
             auto patronIt = find_if(patrons.begin(), patrons.end(),
-                                    [patronId](const Patron &patron)
-                                    { return patron.id == patronId; });
+                                    [patronName](const Patron &patron)
+                                    { return patron.name == patronName; });
             if (patronIt != patrons.end())
             {
                 bookIt->isAvailable = true;
@@ -153,6 +180,21 @@ public:
             cout << "Book is not checked out or not found!" << endl;
         }
     }
+
+private:
+    string generateBookId(const string &title) const
+    {
+
+        srand(time(0));
+        int randomNumber = rand() % 1000;
+
+        string id = title;
+        transform(id.begin(), id.end(), id.begin(), ::tolower);
+        id.erase(remove_if(id.begin(), id.end(), ::isspace), id.end());
+        id = id + "-" + to_string(randomNumber);
+
+        return id;
+    }
 };
 
 int main()
@@ -162,14 +204,14 @@ int main()
 
     while (true)
     {
-        cout << "\nLibrary Management System" << endl;
-        cout << "1. Add Book" << endl;
-        cout << "2. Display Books" << endl;
-        cout << "3. Add Patron" << endl;
-        cout << "4. Display Patrons" << endl;
-        cout << "5. Check Out Book" << endl;
-        cout << "6. Return Book" << endl;
-        cout << "7. Exit" << endl;
+        cout << "\nLibrary Management System " << endl;
+        cout << "1. Add Book " << endl;
+        cout << "2. Display Books " << endl;
+        cout << "3. Add Patron " << endl;
+        cout << "4. Display Patrons " << endl;
+        cout << "5. Check Out Book " << endl;
+        cout << "6. Return Book " << endl;
+        cout << "7. Exit " << endl;
         cout << "Enter your choice: ";
         cin >> choice;
 
@@ -203,22 +245,24 @@ int main()
             break;
         case 5:
         {
-            int bookId, patronId;
+            string bookId, patronName;
             cout << "Enter book ID to check out: ";
             cin >> bookId;
-            cout << "Enter patron ID: ";
-            cin >> patronId;
-            library.checkoutBook(bookId, patronId);
+            cout << "Enter patron name: ";
+            cin.ignore();
+            getline(cin, patronName);
+            library.checkoutBook(bookId, patronName);
             break;
         }
         case 6:
         {
-            int bookId, patronId;
+            string bookId, patronName;
             cout << "Enter book ID to return: ";
             cin >> bookId;
-            cout << "Enter patron ID: ";
-            cin >> patronId;
-            library.returnBook(bookId, patronId);
+            cout << "Enter patron name: ";
+            cin.ignore();
+            getline(cin, patronName);
+            library.returnBook(bookId, patronName);
             break;
         }
         case 7:
