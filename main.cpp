@@ -162,14 +162,14 @@ int main()
 
     while (true)
     {
-        cout << "\nLibrary Management System\n";
-        cout << "1. Add Book\n";
-        cout << "2. Display Books\n";
-        cout << "3. Add Patron\n";
-        cout << "4. Display Patrons\n";
-        cout << "5. Check Out Book\n";
-        cout << "6. Return Book\n";
-        cout << "7. Exit\n";
+        cout << "\nLibrary Management System" << endl;
+        cout << "1. Add Book" << endl;
+        cout << "2. Display Books" << endl;
+        cout << "3. Add Patron" << endl;
+        cout << "4. Display Patrons" << endl;
+        cout << "5. Check Out Book" << endl;
+        cout << "6. Return Book" << endl;
+        cout << "7. Exit" << endl;
         cout << "Enter your choice: ";
         cin >> choice;
 
